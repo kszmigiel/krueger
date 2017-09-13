@@ -27,6 +27,7 @@ servers = list(sections)
 servers.remove('commands')
 commands = config.items('commands')
 
+
 str_format = '{alias:<10} {command:<10} {output:>90}'
 print(str_format.format(alias='Alias', command='Command', output='Output (stdout and stderr)'))
 print(str_format.format(alias='-'*5, command='-'*7, output='-'*90))
@@ -47,9 +48,24 @@ def run_cmd(srv, hostname, username, password, cmd, cmd_id):
                             output=output)+"\n")
     return True
 
+# checking for flags
+
+for arg in sys.argv[2:]:
+    if arg == '-f':
+        threads = []
+        thread_count = 0
+        for srv in servers:
+            os.system('rsync -a %s %s@%s:%s' % (config.get(srv, 'source'), config.get(srv, 'username'), config.get(srv, 'hostname'), config.get(srv, 'dest')))
+
+        while True in [t.isAlive() for t in threads]:
+            time.sleep(0.2)
+
+
+# rest of commands
 
 threads = []
 thread_count = 0
+
 for command in commands:
     cmd_id = command[0]
     cmd = command[1]
