@@ -35,8 +35,11 @@ commands = config.items('commands')
 
 
 str_format = '{alias:<10} {command:<10} {output:>90}'
-print(str_format.format(alias='Alias', command='Command', output='Output (stdout and stderr)'))
-print(str_format.format(alias='-'*5, command='-'*7, output='-'*90))
+print(str_format.format(alias='Alias', command='Command',
+                        output='Output (stdout and stderr)'))
+print(str_format.format(alias='-' * 5, command='-' * 7, output='-' * 90))
+
+# function that runs command at remote host
 
 
 def run_cmd(srv, hostname, username, cmd, cmd_id):
@@ -47,20 +50,28 @@ def run_cmd(srv, hostname, username, cmd, cmd_id):
                    key_filename=rsa_key)
     stdin, stdout, stderr = client.exec_command(cmd)
 
-    output = '{} {}'.format(stdout.read().strip().decode('utf-8'), stderr.read().strip().decode('utf-8'))
+    output = '{} {}'.format(stdout.read().strip().decode(
+        'utf-8'), stderr.read().strip().decode('utf-8'))
 
     print(str_format.format(alias=srv, command=cmd_id, output=output))
     return True
 
-# checking for flags
 
+# checking for flags
 for arg in sys.argv[3:]:
     if arg == '-f':
         for srv in servers:
             if not config.get(srv, 'source') or not config.get(srv, 'dest'):
                 continue
-            os.system('rsync -a %s %s@%s:%s' % (config.get(srv, 'source'), config.get(srv, 'username'), config.get(srv, 'hostname'), config.get(srv, 'dest')))
-            print(str_format.format(alias=srv, command='rsync', output='form {source} to {dest}'.format(source = config.get(srv, 'source'), dest = config.get(srv, 'dest'))))
+            os.system('rsync -a {source} {username}@{hostname}:{dest}'.format(
+                source=config.get(srv, 'source'),
+                username=config.get(srv, 'username'),
+                hostname=config.get(srv, 'hostname'),
+                dest=config.get(srv, 'dest')))
+            print(str_format.format(alias=srv, command='rsync',
+                                    output='form {source} to {dest}'.format(
+                                        source=config.get(srv, 'source'),
+                                        dest=config.get(srv, 'dest'))))
 
 # rest of commands
 
@@ -73,10 +84,10 @@ for command in commands:
 
     for srv in servers:
         t = threading.Thread(target=run_cmd, kwargs={'srv': srv,
-                                                              'hostname': config.get(srv, 'hostname'),
-                                                              'username': config.get(srv, 'username'),
-                                                              'cmd': cmd,
-                                                              'cmd_id': cmd_id})
+                                                     'hostname': config.get(srv, 'hostname'),
+                                                     'username': config.get(srv, 'username'),
+                                                     'cmd': cmd,
+                                                     'cmd_id': cmd_id})
         t.start()
         threads.append(t)
         thread_count += 1
