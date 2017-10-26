@@ -19,11 +19,11 @@ class Krueger:
         self.config = configparser.RawConfigParser()
         self.config.readfp(open(f_path))
 
-        self.sections = config.sections()
+        self.sections = self.config.sections()
         if 'commands' not in self.sections:
             raise ValueError('You need to have a `commands` section in your config file')
 
-        self.servers = list(sections)
+        self.servers = list(self.sections)
         self.servers.remove('commands')
         self.commands = self.config.items('commands')
 
@@ -41,6 +41,7 @@ class Krueger:
         for command in self.commands:
             cmd_id = command[0]
             cmd = command[1]
+            self.threads = []
 
             for srv in self.servers:
                 t = threading.Thread(target=self.run_cmd, kwargs={'srv': srv,
@@ -49,7 +50,7 @@ class Krueger:
                                                              'cmd': cmd,
                                                              'cmd_id': cmd_id})
                 t.start()
-                threads.append(t)
+                self.threads.append(t)
 
-        while True in [t.isAlive() for t in threads]:
+        while True in [t.isAlive() for t in self.threads]:
             time.sleep(0.2)
